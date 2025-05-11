@@ -321,6 +321,14 @@
 
 @PointClass base(Targetname, Angles, Parentname, Global) studio( "models/props/metal_box.mdl" ) = prop_weighted_cube : "Weighted Cube"
 [
+	CubeType(choices) : "Cube Type" : 0 =
+	[
+		0 : "Standard"
+		1 : "Companion"
+		2 : "Reflective"
+		3 : "Sphere"
+	]
+	
 	input  Dissolve(void) : "Dissolves the cube."
 	
 	output OnFizzled(void) : "Fired when a cube is fizzled."
@@ -394,4 +402,113 @@
 	LightingLandmark(target_destination) : "Lighting Landmark" :  : "Entity at which the reference origin is contained. " +
 									" If empty, the info_lighting_relative's origin will" +
 									" be used."
+]
+
+///=============================================================================
+//
+// Portal 2's stuff
+//
+///=============================================================================
+
+@BaseClass = BaseProjector : "The base for all the different projectors (wall & tractor beam)."
+[
+	StartEnabled(boolean) : "Start Enabled" : 1 : "If the projector should start enabled."
+	
+	DisableHelper(boolean) : "Disable Placement Helper" : 0 : "Disable the automatically created placement helper to prevent it from fighting with a custom one."
+	
+	input Enable(void) : "Enables projection from this projector."
+	input Disable(void) : "Disables projection from this projector."
+]
+
+@PointClass base(Parentname, Targetname, Angles) studio() = env_portal_laser
+: "Laser beam that will move through portals and reflect off metal surfaces."
+[
+	model(studio) : "Laser model" : "models/props/laser_emitter_center.mdl"
+	
+	StartState(choices) : "Start off?" : 0 =
+	[
+		1 : "Yes"
+		0 : "No"
+	]
+	
+	LethalDamage(choices) : "Deal lethal damage" : 0 =
+	[
+		0 : "Non-lethal"
+		1 : "Lethal"
+	]
+	
+	AutoAimEnabled(boolean) : "Should auto aim" : 1 : "Default to enabled"
+
+	skin(choices) : "Skin Type" : 0 =
+	[
+		0 : "Clean"
+		1 : "Rusted"
+	]
+
+	input Toggle( void ) : "Toggle the laser on and off."
+	input TurnOn( void ) : "Turn the laser on."
+	input TurnOff( void ) : "Turn the laser off."
+]
+
+
+@PointClass base(Targetname) = point_laser_target
+: "Target for lasers to strike. The entity will fire outputs when struck and unstruck."
+[
+	terminalpoint(boolean) : "Terminal Point" : 1
+
+	output OnPowered(void) : "Fired when a laser hits the target."
+	output OnUnpowered(void) : "Fired when a laser has stopped hitting the target."
+]
+
+@PointClass base(Parentname, Targetname) studio() = prop_laser_catcher
+: "Laser catcher that has target for lasers to strike. The entity will fire outputs when struck and unstruck."
+[
+	SkinType(choices) : "Skin Type" : 0 =
+	[
+		0 : "Clean"
+		1 : "Rusted"
+	]
+	
+	model(studio) : "laser catcher model" : "models/props/laser_catcher.mdl"
+	output OnPowered(void) : "Fired when a laser hits the target."
+	output OnUnpowered(void) : "Fired when a laser has stopped hitting the target."
+]
+
+@PointClass base(Parentname, Targetname) studio() = prop_laser_relay
+: "Laser catcher that has target for lasers to strike. The entity will fire outputs when struck and unstruck."
+[
+	model(studio) : "laser relay model" : "models/props/laser_receptacle.mdl"
+	output OnPowered(void) : "Fired when a laser hits the target."
+	output OnUnpowered(void) : "Fired when a laser has stopped hitting the target."
+]
+
+@SolidClass base(Trigger) = trigger_catapult : "Catapult the player in a given diretion at a given velocity."
+[
+	playerSpeed(float) : "Player Speed" : 450 : "Speed at which to launch the players (u/sec)"
+	physicsSpeed(float) : "Physics Object Speed" : 450 : "Speed at which to launch physics objects (u/sec)"
+	useThresholdCheck(boolean) : "Use Threshold Check" : 0
+	entryAngleTolerance(float) : "Entry Angle Tolerance" : "0.0" : "Flung object's velocity must be pointing this much at the target. Specify a value between [-1...1] 1 means exactly, 0 means within 180 degrees -1 means any angle is accepted. This is only used if Use Threshold Check is set to yes."
+	useExactVelocity(boolean) : "Use Exact Velocity" : 0 : "Try to fling exactly at the speed specified - this prevents the added upward velocity from a launch target."
+	exactVelocityChoiceType(choices) : "Exact Solution Method" : 0 :
+	"Using exact velocity generates two correct solutions. Use this to force which one you choose." =
+	[
+		0 : "Best"
+		1 : "Solution One"
+		2 : "Solution Two"
+	]
+	lowerThreshold(float) : "Lower Threshold" : "0.15" : "Flung object must be within this percentage value in order to activate fling. Specify a value between [0...1] (default is .15) This is only used if Use Threshold Check is set to yes."
+	upperThreshold(float) : "Upper Threshold" : "0.30" : "Flung object must be within this percentage value in order to activate fling. Specify a value between [0...1] (default is .30) This is only used if Use Threshold Check is set to yes."
+	launchDirection(angle) : "Launch direction" : "0 0 0" : "Direction to launch the player in."
+	launchTarget(target_destination) : "Launch target" : "" : "Entity to try to 'hit' when we're launched."
+	onlyVelocityCheck(boolean) : "Only check velocity" : 0 : "Only check velocity of the touching object - don't actually catapult it.  Use in conjunction with OnCatapulted to create velocity checking triggers.  Only works when Use Threshhold Check is enabled."
+	applyAngularImpulse(boolean) : "Apply angular impulse" : 1 : "If a random angular impulse should be applied to physics objects being catapulted."
+	AirCtrlSupressionTime(float) : "Air Control SupressionTime" : "-1.0" : "[Launch by target only!]If greater than zero, supress player aircontrol for this number (in seconds). If less than zero use the default (quarter second)."
+
+	output OnCatapulted(void) : "The object has been launched."
+]
+
+// Projected entities
+
+@PointClass base(Targetname, Angles, BaseProjector) studio("models/props/wall_emitter.mdl") = prop_wall_projector : "Wall Projector"
+[
 ]
